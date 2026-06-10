@@ -700,6 +700,8 @@ hr {
     box-shadow: none;
   }
 }
+
+
     </style>
 </head>
 <body>
@@ -716,6 +718,7 @@ hr {
                 <a href="<?= BASE_URL ?>modules/menu/index.php">Data Menu</a>
                 <a href="<?= BASE_URL ?>modules/transaksi/index.php">Transaksi</a>
                 <a href="<?= BASE_URL ?>modules/kalkulator/index.php">Kalkulator Menu</a>
+                <a href="<?= BASE_URL ?>logout.php">logout</a>
             </div>
         </div>
     </nav>

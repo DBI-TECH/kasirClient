@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['login'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
+<?php
 include 'config/database.php';
 include 'includes/header.php';
 include 'includes/fungsi.php';
@@ -16,7 +24,7 @@ $resultHariIni = mysqli_query($conn, $queryHariIni);
 $dataHariIni = mysqli_fetch_assoc($resultHariIni);
 ?>
 
-<h1><i class="fas fa-chalkboard-user"></i> Selamat Datang di Sistem Kasir Tuklife</h1>
+<h1><i class="fas fa-chalkboard-user"></i> Selamat Datang <?= $_SESSION['nama_kasir']; ?></h1>
 
 <div class="stats-grid">
     <div class="stat-card">

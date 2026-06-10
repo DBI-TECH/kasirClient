@@ -1,16 +1,33 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../includes/fungsi.php';
-
+// Mulai session PALING ATAS, sebelum apapun
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once '../../includes/header.php';
 
-if (!isset($_SESSION['keranjang_menu'])) {
-    $_SESSION['keranjang_menu'] = [];
+require_once '../../config/database.php';
+require_once '../../includes/fungsi.php';
+
+// Proses semua action (hapus, refresh, POST) SEBELUM include header
+// ================================================================
+
+// Proses hapus item
+if (isset($_GET['action']) && $_GET['action'] === 'hapus' && isset($_GET['id'])) {
+    $id = (int)$_GET['id'];
+    if (isset($_SESSION['keranjang_menu'][$id])) {
+        unset($_SESSION['keranjang_menu'][$id]);
+    }
+    header('Location: index.php');
+    exit;
 }
 
+// Proses refresh/clear cart
+if (isset($_GET['action']) && $_GET['action'] === 'refresh') {
+    $_SESSION['keranjang_menu'] = [];
+    header('Location: index.php');
+    exit;
+}
+
+// Ambil data barang
 $itemsByTipe = ambilBarangGroupedByTipe($conn);
 $itemMap = [];
 foreach ($itemsByTipe as $group) {
@@ -28,23 +45,10 @@ function getQtyPost(int $id_barang): int
     return $q;
 }
 
-if (isset($_GET['action']) && $_GET['action'] === 'hapus' && isset($_GET['id'])) {
-    $id = (int)$_GET['id'];
-    if (isset($_SESSION['keranjang_menu'][$id])) {
-        unset($_SESSION['keranjang_menu'][$id]);
-    }
-    header('Location: index.php');
-    exit;
-}
-
-if (isset($_GET['action']) && $_GET['action'] === 'refresh') {
-    $_SESSION['keranjang_menu'] = [];
-    header('Location: index.php');
-    exit;
-}
-
 $pesan = '';
+$nama_pemesan = '';
 
+// Proses POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_to_keranjang'])) {
         $added = false;
@@ -63,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pesan = $added ? '✓ Pesanan berhasil ditambahkan ke keranjang.' : '⚠ Isi jumlah minimal 1 untuk menambahkan pesanan.';
     } elseif (isset($_POST['submit_transaksi'])) {
         $nama_pemesan = trim($_POST['nama_pemesan'] ?? '');
+        $cash = (int)($_POST['cash'] ?? 0);
         
         if ($nama_pemesan === '') {
             $pesan = '✗ Nama pemesan wajib diisi.';
@@ -94,11 +99,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = true;
             }
             
-            if (!$error) {
-                mysqli_begin_transaction($conn);
+           if (!$error) {
+
+    if ($cash < $total) {
+        $pesan = '✗ Uang pembayaran kurang.';
+        $error = true;
+    }
+
+}
+
+if (!$error) {
+
+    $change = $cash - $total;
+
+    mysqli_begin_transaction($conn);
                 try {
                     $nama_pemesan_esc = mysqli_real_escape_string($conn, $nama_pemesan);
-                    $query = "INSERT INTO transaksi (total, nama_pemesan) VALUES ($total, '$nama_pemesan_esc')";
+                    $query = "INSERT INTO transaksi (
+            total,
+            nama_pemesan,
+            cash,
+            `change`
+          ) VALUES (
+            $total,
+            '$nama_pemesan_esc',
+            $cash,
+            $change
+          )";
+
+        $cash = (int)($_POST['cash'] ?? 0);
+
+if ($cash < $total) {
+    $kurang = $total - $cash;
+    $pesan = '✗ Uang pembayaran kurang ' . rupiah($kurang);
+    $error = true;
+}
+
                     if (!mysqli_query($conn, $query)) {
                         throw new Exception('Gagal menyimpan transaksi');
                     }
@@ -113,17 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     mysqli_commit($conn);
                     
-                    $_SESSION['last_struk'] = [
-                        'kasir' => 'Adni Budi',
-                        'nama_pemesan' => $nama_pemesan,
-                        'total' => $total,
-                        'tgl' => date('Y-m-d H:i:s')
-                    ];
-                    
                     $pesan = '✓ Transaksi berhasil disimpan! Total: ' . rupiah($total);
                     $_SESSION['keranjang_menu'] = [];
                     $_POST = [];
                     
+                    // Redirect ke struk.php
                     header("Location: struk.php?id=$id_transaksi");
                     exit;
                     
@@ -136,6 +166,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Setelah semua proses selesai, baru include header
+// ================================================================
+require_once '../../includes/header.php';
+
+// Inisialisasi keranjang jika belum ada
+if (!isset($_SESSION['keranjang_menu'])) {
+    $_SESSION['keranjang_menu'] = [];
+}
+
+// Hitung total dan siapkan data keranjang
 $totalSementara = 0;
 $keranjangItems = [];
 foreach ($_SESSION['keranjang_menu'] as $id_barang => $qty) {
@@ -158,7 +198,13 @@ foreach ($itemsByTipe as $group) {
     $totalMenu += count($group);
 }
 $itemCountInCart = count($keranjangItems);
-?>
+
+// Tampilkan pesan jika ada
+if (!empty($pesan) && !isset($_SESSION['no_alert'])): ?>
+    <div class="alert alert-<?= strpos($pesan, '✓') !== false ? 'success' : (strpos($pesan, '⚠') !== false ? 'warning' : 'error') ?>">
+        <?= htmlspecialchars($pesan) ?>
+    </div>
+<?php endif; ?>
 
 <h1><i class="fas fa-calculator"></i> Kalkulator Menu Kasir</h1>
 
@@ -177,17 +223,11 @@ $itemCountInCart = count($keranjangItems);
     </div>
 </div>
 
-<?php if (!empty($pesan)): ?>
-    <div class="alert alert-<?= strpos($pesan, '✓') !== false ? 'success' : (strpos($pesan, '⚠') !== false ? 'warning' : 'error') ?>">
-        <?= htmlspecialchars($pesan) ?>
-    </div>
-<?php endif; ?>
-
 <form method="POST">
     <div class="form-group">
         <label for="nama_pemesan">Nama Pemesan <span style="color:red;">*</span></label>
         <input type="text" name="nama_pemesan" id="nama_pemesan" 
-               value="<?= htmlspecialchars($_POST['nama_pemesan'] ?? '') ?>" 
+               value="<?= htmlspecialchars($nama_pemesan ?: ($_POST['nama_pemesan'] ?? '')) ?>" 
                placeholder="Masukkan nama pemesan" required>
     </div>
     
@@ -229,7 +269,7 @@ $itemCountInCart = count($keranjangItems);
         <hr>
         <h2><i class="fas fa-shopping-cart"></i> Keranjang Pesanan</h2>
         <div class="table-wrapper">
-            <table>
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Menu</th>
@@ -241,17 +281,17 @@ $itemCountInCart = count($keranjangItems);
                 </thead>
                 <tbody>
                     <?php foreach ($keranjangItems as $item): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($item['nama']) ?></td>
-                        <td><?= rupiah($item['harga']) ?></td>
-                        <td><?= $item['qty'] ?></td>
-                        <td><?= rupiah($item['subtotal']) ?></td>
-                        <td>
-                            <a href="?action=hapus&id=<?= $item['id'] ?>" class="action-link action-link-danger" onclick="return confirm('Hapus item ini?')">
-                                <i class="fas fa-trash"></i> Hapus
-                            </a>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td><?= htmlspecialchars($item['nama']) ?></td>
+                            <td><?= rupiah($item['harga']) ?></td>
+                            <td><?= $item['qty'] ?></td>
+                            <td><?= rupiah($item['subtotal']) ?></td>
+                            <td>
+                                <a href="?action=hapus&id=<?= $item['id'] ?>" class="action-link action-link-danger" onclick="return confirm('Hapus item ini?')">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </a>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
                 <tfoot>
@@ -262,6 +302,17 @@ $itemCountInCart = count($keranjangItems);
                 </tfoot>
             </table>
         </div>
+
+            <div class="form-group" style="max-width:300px;margin:15px 0;">
+    <label><strong>Cash</strong></label>
+  <input type="number"
+       name="cash"
+       min="0"
+       value="<?= $_POST['cash'] ?? '' ?>"
+       placeholder="Masukkan uang pembayaran"
+       required>
+</div>
+
         <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
             <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
                 <i class="fas fa-save"></i> Simpan Transaksi
