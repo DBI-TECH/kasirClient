@@ -152,9 +152,30 @@ foreach ($_SESSION['keranjang_menu'] as $id_barang => $qty) {
         'tipe' => $menu['tipe'] ?? 'Umum'
     ];
 }
+
+$totalMenu = 0;
+foreach ($itemsByTipe as $group) {
+    $totalMenu += count($group);
+}
+$itemCountInCart = count($keranjangItems);
 ?>
 
 <h1><i class="fas fa-calculator"></i> Kalkulator Menu Kasir</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value"><?= $totalMenu ?></div>
+        <div class="stat-label"><i class="fas fa-list"></i> Total Menu</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value"><?= $itemCountInCart ?></div>
+        <div class="stat-label"><i class="fas fa-shopping-cart"></i> Item di Keranjang</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value"><?= rupiah($totalSementara) ?></div>
+        <div class="stat-label"><i class="fas fa-money-bill-wave"></i> Total Sementara</div>
+    </div>
+</div>
 
 <?php if (!empty($pesan)): ?>
     <div class="alert alert-<?= strpos($pesan, '✓') !== false ? 'success' : (strpos($pesan, '⚠') !== false ? 'warning' : 'error') ?>">
@@ -236,18 +257,18 @@ foreach ($_SESSION['keranjang_menu'] as $id_barang => $qty) {
                 <tfoot>
                     <tr style="background: #f8fafc; font-weight: bold;">
                         <td colspan="3"><strong>Total Keseluruhan</strong></td>
-                        <td colspan="2"><strong><?= rupiah($totalSementara) ?></strong></div>
+                        <td colspan="2"><strong><?= rupiah($totalSementara) ?></strong></td>
                     </tr>
                 </tfoot>
-            </div>
-            <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
-                <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
-                    <i class="fas fa-save"></i> Simpan Transaksi
-                </button>
-                <a href="?action=refresh" class="btn btn-danger" onclick="return confirm('Yakin ingin mengosongkan keranjang?')">
-                    <i class="fas fa-trash"></i> Kosongkan Keranjang
-                </a>
-            </div>
+            </table>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+            <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
+                <i class="fas fa-save"></i> Simpan Transaksi
+            </button>
+            <a href="?action=refresh" class="btn btn-danger" onclick="return confirm('Yakin ingin mengosongkan keranjang?')">
+                <i class="fas fa-trash"></i> Kosongkan Keranjang
+            </a>
         </div>
     <?php endif; ?>
 </form>

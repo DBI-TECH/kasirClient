@@ -16,10 +16,10 @@
 }
 
 body {
-  background: url("../assets/img/back2.png") no-repeat center center fixed;
-  background-size: cover;
-  min-height: 100vh;
-  font-family: "Poppins", sans-serif;
+    background: url("<?= BASE_URL ?>assets/img/back2.png") no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
 }
 
 body::before {
@@ -706,7 +706,9 @@ hr {
     <nav>
         <div class="nav-container">
             <div class="logo">
-                <img src="../assets/img/logop2.png" style="height: 90px; width: auto; object-fit: contain;" alt="logo tuklife">
+               <img src="<?= BASE_URL ?>assets/img/logop2.png"
+     style="height:90px;width:auto;object-fit:contain;"
+     alt="logo tuklife">
             </div>
             <div class="nav-links">
                 <a href="<?= BASE_URL ?>index.php">Beranda</a>
