@@ -151,7 +151,8 @@ require_once '../../includes/header.php';
 <div class="struk-container">
 
     <div class="struk-header">
-        <h3>TUKLIFE</h3>
+        <img src="<?= BASE_URL ?>assets/img/kasir-struk.png" style="width: 90%; height: 50px; object-fit: contain;">
+        <p>#YourDelightStreetDoze</p>
         <p>================================</p>
         <p>Jl. Depok, Semarang</p>
         <p>Telp. 08xxxxxxxxxx</p>
@@ -226,6 +227,8 @@ require_once '../../includes/header.php';
         <p>Atas Kunjungan Anda</p>
         <p>Simpan Struk Sebagai Bukti</p>
         <p>================================</p>
+        <strong><i class="fab fa-instagram"></i> tuklife.street</strong> |
+        <strong><i class="fab fa-tiktok"></i> tuklife.street</strong>
     </div>
 
 </div>

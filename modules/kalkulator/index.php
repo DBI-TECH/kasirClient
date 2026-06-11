@@ -67,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pesan = $added ? '✓ Pesanan berhasil ditambahkan ke keranjang.' : '⚠ Isi jumlah minimal 1 untuk menambahkan pesanan.';
     } elseif (isset($_POST['submit_transaksi'])) {
         $nama_pemesan = trim($_POST['nama_pemesan'] ?? '');
-        $cash = (int)($_POST['cash'] ?? 0);
+        $cash_raw = preg_replace('/[^0-9]/', '', $_POST['cash'] ?? '0');
+        $cash = (int)$cash_raw;
         
         if ($nama_pemesan === '') {
             $pesan = '✗ Nama pemesan wajib diisi.';
