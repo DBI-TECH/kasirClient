@@ -158,12 +158,42 @@ if (!empty($pesan)): ?>
 <?php endif; ?>
 
 <style>
+/* ============ RESPONSIVE META & RESET ============ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    font-size: 16px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: url("<?= BASE_URL ?>assets/img/back2.png") no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+/* Container Responsive */
+.main-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+}
+
+/* ============ PRODUCT CARD ============ */
 .product-card {
     border: 1px solid #e2e8f0;
     padding: 15px;
     border-radius: 8px;
     background: white;
     transition: all 0.3s ease;
+    height: 100%;
 }
 
 .product-card:hover {
@@ -203,9 +233,10 @@ if (!empty($pesan)): ?>
     100% { transform: scale(1); background-color: transparent; }
 }
 
+/* ============ STATS GRID ============ */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -223,6 +254,7 @@ if (!empty($pesan)): ?>
     font-size: 28px;
     font-weight: bold;
     margin-bottom: 10px;
+    word-break: break-word;
 }
 
 .stat-label {
@@ -230,6 +262,7 @@ if (!empty($pesan)): ?>
     opacity: 0.9;
 }
 
+/* ============ PRODUCT GRID ============ */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -242,6 +275,7 @@ if (!empty($pesan)): ?>
     font-weight: bold;
     font-size: 16px;
     margin-bottom: 10px;
+    word-break: break-word;
 }
 
 .product-price {
@@ -251,6 +285,7 @@ if (!empty($pesan)): ?>
     margin-bottom: 10px;
 }
 
+/* ============ BUTTONS ============ */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -281,7 +316,6 @@ if (!empty($pesan)): ?>
     background-color: #4b5563;
 }
 
-/* Style tombol Edit seperti gambar */
 .btn-edit {
     background-color: white;
     color: #3b82f6;
@@ -299,7 +333,6 @@ if (!empty($pesan)): ?>
     color: white;
 }
 
-/* Style tombol Hapus seperti gambar */
 .btn-delete {
     background-color: white;
     color: #ef4444;
@@ -320,18 +353,22 @@ if (!empty($pesan)): ?>
     display: flex;
     gap: 8px;
     justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
+/* ============ ORDER SUMMARY ============ */
 .order-summary {
     background: #f8fafc;
     padding: 20px;
     border-radius: 10px;
     margin-top: 20px;
+    overflow-x: auto;
 }
 
 .order-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 500px;
 }
 
 .order-table th,
@@ -359,7 +396,7 @@ if (!empty($pesan)): ?>
     border-top: 2px solid #cbd5e1;
 }
 
-/* Modal dengan scroll */
+/* ============ MODAL ============ */
 .modal {
     display: none;
     position: fixed;
@@ -384,7 +421,6 @@ if (!empty($pesan)): ?>
     text-align: center;
 }
 
-/* Custom scrollbar untuk modal content */
 .modal-content::-webkit-scrollbar {
     width: 8px;
 }
@@ -399,17 +435,15 @@ if (!empty($pesan)): ?>
     border-radius: 10px;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
 .modal-buttons {
     margin-top: 20px;
     display: flex;
     gap: 10px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
+/* ============ QRIS MODAL ============ */
 .qr-container {
     text-align: center;
     padding: 10px;
@@ -417,6 +451,8 @@ if (!empty($pesan)): ?>
 
 .qr-container img {
     max-width: 180px;
+    width: 100%;
+    height: auto;
     margin: 10px auto;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
@@ -446,36 +482,6 @@ if (!empty($pesan)): ?>
 
 .btn-back-modal:hover {
     background-color: #5a6268;
-}
-
-.qr-info {
-    text-align: left;
-    margin: 15px 0;
-    padding: 10px;
-    background: #f8fafc;
-    border-radius: 5px;
-    font-size: 11px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.qr-info p {
-    margin: 5px 0;
-}
-
-/* Scrollbar untuk qr-info */
-.qr-info::-webkit-scrollbar {
-    width: 6px;
-}
-
-.qr-info::-webkit-scrollbar-track {
-    background: #e2e8f0;
-    border-radius: 10px;
-}
-
-.qr-info::-webkit-scrollbar-thumb {
-    background: #94a3b8;
-    border-radius: 10px;
 }
 
 .button-group {
@@ -514,6 +520,8 @@ if (!empty($pesan)): ?>
     justify-content: space-between;
     margin-bottom: 5px;
     font-size: 13px;
+    flex-wrap: wrap;
+    gap: 5px;
 }
 
 .button-footer {
@@ -525,125 +533,361 @@ if (!empty($pesan)): ?>
     bottom: 0;
     background: white;
     padding: 10px 0;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+}
+
+/* ============ RESPONSIVE MEDIA QUERIES ============ */
+
+/* Tablet (max-width: 768px) */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 15px;
+    }
+    
+    .stats-grid {
+        gap: 15px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 15px;
+    }
+    
+    .product-name {
+        font-size: 14px;
+    }
+    
+    .product-price {
+        font-size: 16px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .total-final {
+        font-size: 18px;
+    }
+    
+    .order-table th,
+    .order-table td {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile (max-width: 576px) */
+@media (max-width: 576px) {
+    .main-container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .product-card {
+        padding: 12px;
+    }
+    
+    .product-qty {
+        width: 80px;
+        padding: 6px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group .btn {
+        width: 100%;
+    }
+    
+    .order-summary {
+        padding: 12px;
+    }
+    
+    .order-table th,
+    .order-table td {
+        padding: 8px;
+        font-size: 11px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-edit, .btn-delete {
+        width: 100%;
+        text-align: center;
+        margin-right: 0;
+    }
+    
+    .total-final {
+        font-size: 16px;
+    }
+    
+    .modal-content {
+        margin: 15% auto;
+        padding: 15px;
+        width: 95%;
+    }
+    
+    .qr-container img {
+        max-width: 150px;
+    }
+    
+    .total-box span {
+        font-size: 16px;
+    }
+    
+    .row-flex {
+        font-size: 12px;
+    }
+    
+    .button-footer {
+        flex-direction: column;
+    }
+    
+    .button-footer button {
+        width: 100%;
+    }
+    
+    .form-group input {
+        max-width: 100%;
+        padding: 8px;
+    }
+}
+
+/* Mobile Landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    .modal-content {
+        margin: 2% auto;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .qr-container img {
+        max-width: 120px;
+    }
+}
+
+/* Small Mobile (max-width: 400px) */
+@media (max-width: 400px) {
+    .order-table th,
+    .order-table td {
+        padding: 6px;
+        font-size: 10px;
+    }
+    
+    .btn-edit, .btn-delete {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .total-final {
+        font-size: 14px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+    
+    .product-name {
+        font-size: 13px;
+    }
+    
+    .product-price {
+        font-size: 15px;
+    }
+}
+
+/* Desktop Large (min-width: 1400px) */
+@media (min-width: 1400px) {
+    .main-container {
+        max-width: 1400px;
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
 }
 </style>
 
-<h1><i class="fas fa-calculator"></i> Kalkulator Menu Kasir</h1>
+<div class="main-container">
+    <h1><i class="fas fa-calculator"></i> Kalkulator Menu Kasir</h1>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-value"><?= $totalMenu ?></div>
-        <div class="stat-label"><i class="fas fa-list"></i> Total Menu</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value" id="itemCount"><?= $itemCount ?></div>
-        <div class="stat-label"><i class="fas fa-shopping-cart"></i> Item Dipesan</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value" id="totalDisplay"><?= rupiah($totalSementara) ?></div>
-        <div class="stat-label"><i class="fas fa-money-bill-wave"></i> Total Pesanan</div>
-    </div>
-</div>
-
-<form method="POST" id="orderForm">
-    <div class="form-group">
-        <label for="nama_pemesan">Nama Pemesan <span style="color:red;">*</span></label>
-        <input type="text" name="nama_pemesan" id="nama_pemesan" 
-               value="<?= htmlspecialchars($nama_pemesan ?: ($_POST['nama_pemesan'] ?? '')) ?>" 
-               placeholder="Masukkan nama pemesan" required>
-    </div>
-    
-    <?php if (empty($itemsByTipe)): ?>
-        <div class="alert alert-warning">Belum ada menu yang tersedia.</div>
-    <?php else: ?>
-        <?php foreach ($itemsByTipe as $tipe => $group): ?>
-            <div style="margin-bottom: 30px;">
-                <div class="category-title">
-                    <h3><i class="fas fa-tag"></i> <?= htmlspecialchars(ucfirst($tipe)) ?></h3>
-                </div>
-                <div class="product-grid">
-                    <?php foreach ($group as $item): 
-                        $id_barang = (int)$item['id_barang'];
-                        $qtyVal = $_POST['qty'][$id_barang] ?? 0;
-                    ?>
-                        <div class="product-card" data-price="<?= $item['harga'] ?>" data-id="<?= $id_barang ?>">
-                            <div class="product-name"><?= htmlspecialchars($item['nama_barang']) ?></div>
-                            <div class="product-price"><?= rupiah($item['harga']) ?></div>
-                            <input type="number" name="qty[<?= $id_barang ?>]" 
-                                   value="<?= $qtyVal ?>" min="0" class="product-qty"
-                                   data-id="<?= $id_barang ?>">
-                            <div class="product-subtotal" id="subtotal_<?= $id_barang ?>">
-                                <?= $qtyVal > 0 ? '= ' . rupiah($item['harga'] * $qtyVal) : '' ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-    
-    <hr>
-    
-    <!-- Ringkasan Pesanan Langsung -->
-    <div class="order-summary" id="orderSummary" style="<?= empty($orderItems) ? 'display:none;' : '' ?>">
-        <h3><i class="fas fa-receipt"></i> Ringkasan Pesanan</h3>
-        <table class="order-table">
-            <thead>
-                <tr>
-                    <th>Menu</th>
-                    <th>Harga</th>
-                    <th>Jumlah</th>
-                    <th>Subtotal</th>
-                    <th style="width: 120px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="orderSummaryBody">
-                <?php foreach ($orderItems as $item): ?>
-                <tr>
-                    <td data-id="<?= $item['id'] ?>"><?= htmlspecialchars($item['nama']) ?></td>
-                    <td><?= rupiah($item['harga']) ?></td>
-                    <td class="qty-cell"><?= $item['qty'] ?></td>
-                    <td><?= rupiah($item['subtotal']) ?></td>
-                    <td class="action-buttons">
-                        <button type="button" class="btn-edit" onclick="editItem(<?= $item['id'] ?>, <?= $item['qty'] ?>)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button type="button" class="btn-delete" onclick="deleteItem(<?= $item['id'] ?>)">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <div class="total-final">
-            <strong>Total: <span id="totalFinal"><?= rupiah($totalSementara) ?></span></strong>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value"><?= $totalMenu ?></div>
+            <div class="stat-label"><i class="fas fa-list"></i> Total Menu</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="itemCount"><?= $itemCount ?></div>
+            <div class="stat-label"><i class="fas fa-shopping-cart"></i> Item Dipesan</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalDisplay"><?= rupiah($totalSementara) ?></div>
+            <div class="stat-label"><i class="fas fa-money-bill-wave"></i> Total Pesanan</div>
         </div>
     </div>
-    
-    <div class="form-group" style="max-width:300px;margin:15px 0;">
-        <label><strong>Cash</strong></label>
-        <input type="text" 
-               name="cash" 
-               id="cash"
-               value="<?= $_POST['cash'] ?? '' ?>" 
-               placeholder="Masukkan uang pembayaran"
-               oninput="formatRupiahInput(this)">
-    </div>
-    
-    <div id="kembalianInfo" style="margin: 10px 0; padding: 10px; border-radius: 5px; display: none;">
-        <strong>Kembalian: </strong> <span id="kembalian">Rp 0</span>
-    </div>
-    
-    <div class="button-group">
-        <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
-            <i class="fas fa-save"></i> Simpan Transaksi
-        </button>
-        <button type="button" class="btn btn-qr" onclick="showQRCode()">
-            <i class="fas fa-qrcode"></i> QRIS Payment
-        </button>
-    </div>
-</form>
+
+    <form method="POST" id="orderForm">
+        <div class="form-group">
+            <label for="nama_pemesan">Nama Pemesan <span style="color:red;">*</span></label>
+            <input type="text" name="nama_pemesan" id="nama_pemesan" 
+                   value="<?= htmlspecialchars($nama_pemesan ?: ($_POST['nama_pemesan'] ?? '')) ?>" 
+                   placeholder="Masukkan nama pemesan" required>
+        </div>
+        
+        <?php if (empty($itemsByTipe)): ?>
+            <div class="alert alert-warning">Belum ada menu yang tersedia.</div>
+        <?php else: ?>
+            <?php foreach ($itemsByTipe as $tipe => $group): ?>
+                <div style="margin-bottom: 30px;">
+                    <div class="category-title">
+                        <h3><i class="fas fa-tag"></i> <?= htmlspecialchars(ucfirst($tipe)) ?></h3>
+                    </div>
+                    <div class="product-grid">
+                        <?php foreach ($group as $item): 
+                            $id_barang = (int)$item['id_barang'];
+                            $qtyVal = $_POST['qty'][$id_barang] ?? 0;
+                        ?>
+                            <div class="product-card" data-price="<?= $item['harga'] ?>" data-id="<?= $id_barang ?>">
+                                <div class="product-name"><?= htmlspecialchars($item['nama_barang']) ?></div>
+                                <div class="product-price"><?= rupiah($item['harga']) ?></div>
+                                <input type="number" name="qty[<?= $id_barang ?>]" 
+                                       value="<?= $qtyVal ?>" min="0" class="product-qty"
+                                       data-id="<?= $id_barang ?>">
+                                <div class="product-subtotal" id="subtotal_<?= $id_barang ?>">
+                                    <?= $qtyVal > 0 ? '= ' . rupiah($item['harga'] * $qtyVal) : '' ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        
+        <hr>
+        
+        <!-- Ringkasan Pesanan Langsung -->
+        <div class="order-summary" id="orderSummary" style="<?= empty($orderItems) ? 'display:none;' : '' ?>">
+            <h3><i class="fas fa-receipt"></i> Ringkasan Pesanan</h3>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Menu</th>
+                        <th>Harga</th>
+                        <th>Jumlah</th>
+                        <th>Subtotal</th>
+                        <th style="width: 120px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="orderSummaryBody">
+                    <?php foreach ($orderItems as $item): ?>
+                    <tr>
+                        <td data-id="<?= $item['id'] ?>"><?= htmlspecialchars($item['nama']) ?></td>
+                        <td><?= rupiah($item['harga']) ?></td>
+                        <td class="qty-cell"><?= $item['qty'] ?></td>
+                        <td><?= rupiah($item['subtotal']) ?></td>
+                        <td class="action-buttons">
+                            <button type="button" class="btn-edit" onclick="editItem(<?= $item['id'] ?>, <?= $item['qty'] ?>)">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn-delete" onclick="deleteItem(<?= $item['id'] ?>)">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <div class="total-final">
+                <strong>Total: <span id="totalFinal"><?= rupiah($totalSementara) ?></span></strong>
+            </div>
+        </div>
+        
+        <div class="form-group" style="max-width:300px;margin:15px 0;">
+            <label><strong>Cash</strong></label>
+            <input type="text" 
+                   name="cash" 
+                   id="cash"
+                   value="<?= $_POST['cash'] ?? '' ?>" 
+                   placeholder="Masukkan uang pembayaran"
+                   oninput="formatRupiahInput(this)">
+        </div>
+        
+        <div id="kembalianInfo" style="margin: 10px 0; padding: 10px; border-radius: 5px; display: none;">
+            <strong>Kembalian: </strong> <span id="kembalian">Rp 0</span>
+        </div>
+        
+        <div class="button-group">
+            <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
+                <i class="fas fa-save"></i> Simpan Transaksi
+            </button>
+            <button type="button" class="btn btn-qr" onclick="showQRCode()">
+                <i class="fas fa-qrcode"></i> QRIS Payment
+            </button>
+        </div>
+    </form>
+</div>
 
 <!-- Modal untuk Edit -->
 <div id="editModal" class="modal">
@@ -663,10 +907,8 @@ if (!empty($pesan)): ?>
     <div class="modal-content">
         <h3><i class="fas fa-qrcode"></i> QRIS Payment</h3>
         <div class="qr-container">
-            <!-- Gambar QRIS -->
             <img src="<?= BASE_URL ?>assets/img/qris.jpg" alt="QRIS Code" onerror="this.src='https://placehold.co/180x180?text=QRIS'">
             
-            <!-- Informasi Subtotal dan Quantity -->
             <div class="row-flex">
                 <span>Subtotal</span>
                 <span id="qrSubtotal" style="font-weight: bold;">Rp 0</span>
@@ -678,15 +920,11 @@ if (!empty($pesan)): ?>
             
             <div class="divider"></div>
             
-            
-            
-            <!-- Total Pembayaran -->
             <div class="total-box">
                 <strong>Total:</strong>
                 <span id="qrTotal">Rp 0</span>
             </div>
             
-            <!-- Tombol Kembali dan Tutup di Bawah (sticky) -->
             <div class="button-footer">
                 <button onclick="closeQRModal()" class="close-btn">
                     <i class="fas fa-times"></i> Tutup
@@ -699,14 +937,7 @@ if (!empty($pesan)): ?>
 <script>
 let currentEditId = null;
 
-// Fungsi kembali dari modal QRIS
-function goBackFromQR() {
-    closeQRModal();
-}
-
-// Fungsi untuk menampilkan QRIS
 function showQRCode() {
-    // Hitung total pesanan dan quantity
     let total = 0;
     let quantity = 0;
     const qtyInputs = document.querySelectorAll('.product-qty');
@@ -725,12 +956,10 @@ function showQRCode() {
         return;
     }
     
-    // Update total, subtotal, dan quantity di modal QRIS
     document.getElementById('qrTotal').textContent = formatRupiah(total);
     document.getElementById('qrSubtotal').textContent = formatRupiah(total);
     document.getElementById('qrQuantity').textContent = quantity;
     
-    // Tampilkan modal
     document.getElementById('qrModal').style.display = 'block';
 }
 
@@ -738,17 +967,12 @@ function closeQRModal() {
     document.getElementById('qrModal').style.display = 'none';
 }
 
-// Tutup modal dengan tombol ESC
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         const qrModal = document.getElementById('qrModal');
         const editModal = document.getElementById('editModal');
-        if (qrModal.style.display === 'block') {
-            closeQRModal();
-        }
-        if (editModal.style.display === 'block') {
-            closeModal();
-        }
+        if (qrModal.style.display === 'block') closeQRModal();
+        if (editModal.style.display === 'block') closeModal();
     }
 });
 
@@ -757,27 +981,23 @@ function updateTotal() {
     let itemCount = 0;
     let orderItems = [];
     
-    // Ambil semua input qty
     const qtyInputs = document.querySelectorAll('.product-qty');
     
     qtyInputs.forEach(input => {
         let qty = parseInt(input.value) || 0;
         if (qty > 0) {
             itemCount++;
-            // Ambil harga dari data-price di parent product-card
             const productCard = input.closest('.product-card');
             const price = parseInt(productCard.dataset.price);
             const subtotal = price * qty;
             total += subtotal;
             
-            // Update subtotal display
             const id = productCard.dataset.id;
             const subtotalDiv = document.getElementById(`subtotal_${id}`);
             if (subtotalDiv) {
                 subtotalDiv.textContent = `= ${formatRupiah(subtotal)}`;
             }
             
-            // Simpan untuk ringkasan
             const nama = productCard.querySelector('.product-name').innerText;
             orderItems.push({
                 id: parseInt(id),
@@ -787,29 +1007,20 @@ function updateTotal() {
                 subtotal: subtotal
             });
         } else {
-            // Reset subtotal display jika qty 0
             const productCard = input.closest('.product-card');
             const id = productCard.dataset.id;
             const subtotalDiv = document.getElementById(`subtotal_${id}`);
-            if (subtotalDiv) {
-                subtotalDiv.textContent = '';
-            }
+            if (subtotalDiv) subtotalDiv.textContent = '';
         }
     });
     
-    // Update display total
     const totalDisplay = document.getElementById('totalDisplay');
     totalDisplay.textContent = formatRupiah(total);
     totalDisplay.classList.add('total-update');
     setTimeout(() => totalDisplay.classList.remove('total-update'), 500);
     
-    // Update item count
     document.getElementById('itemCount').textContent = itemCount;
-    
-    // Update ringkasan pesanan
     updateOrderSummary(orderItems, total);
-    
-    // Update kembalian
     updateKembalian();
 }
 
@@ -824,11 +1035,8 @@ function updateOrderSummary(items, total) {
     }
     
     orderSummary.style.display = 'block';
-    
-    // Clear existing rows
     orderSummaryBody.innerHTML = '';
     
-    // Add new rows with edit/delete buttons
     items.forEach(item => {
         const row = orderSummaryBody.insertRow();
         row.insertCell(0).textContent = item.nama;
@@ -836,7 +1044,6 @@ function updateOrderSummary(items, total) {
         row.insertCell(2).textContent = item.qty;
         row.insertCell(3).textContent = formatRupiah(item.subtotal);
         
-        // Action buttons cell
         const actionCell = row.insertCell(4);
         actionCell.className = 'action-buttons';
         actionCell.innerHTML = `
@@ -868,12 +1075,10 @@ function saveEdit() {
     
     if (qtyInput) {
         qtyInput.value = newQty;
-        // Trigger change event
         const event = new Event('input', { bubbles: true });
         qtyInput.dispatchEvent(event);
         updateTotal();
     }
-    
     closeModal();
 }
 
@@ -882,7 +1087,6 @@ function deleteItem(id) {
         const qtyInput = document.querySelector(`.product-qty[data-id="${id}"]`);
         if (qtyInput) {
             qtyInput.value = 0;
-            // Trigger change event
             const event = new Event('input', { bubbles: true });
             qtyInput.dispatchEvent(event);
             updateTotal();
@@ -896,7 +1100,6 @@ function closeModal() {
 }
 
 function updateKembalian() {
-    // Hitung total dari form
     let total = 0;
     const qtyInputs = document.querySelectorAll('.product-qty');
     qtyInputs.forEach(input => {
@@ -908,7 +1111,6 @@ function updateKembalian() {
         }
     });
     
-    // Ambil nilai cash (hilangkan titik)
     let cashInput = document.getElementById('cash');
     let cashValue = cashInput.value.replace(/\./g, '');
     let cash = parseInt(cashValue) || 0;
@@ -949,48 +1151,33 @@ function formatRupiah(angka) {
 }
 
 function formatRupiahInput(input) {
-    // Hapus semua karakter non-digit
     let value = input.value.replace(/[^0-9]/g, '');
-    
     if (value === '') {
         input.value = '';
         updateKembalian();
         return;
     }
-    
-    // Konversi ke integer
     let number = parseInt(value);
-    
-    // Format dengan titik sebagai pemisah ribuan (tampilan saja)
     let formatted = number.toLocaleString('id-ID');
     input.value = formatted;
-    
     updateKembalian();
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
     const editModal = document.getElementById('editModal');
     const qrModal = document.getElementById('qrModal');
-    if (event.target == editModal) {
-        closeModal();
-    }
-    if (event.target == qrModal) {
-        closeQRModal();
-    }
+    if (event.target == editModal) closeModal();
+    if (event.target == qrModal) closeQRModal();
 }
 
-// Jalankan update total saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     updateTotal();
 });
 
-// Tambahkan event listener untuk semua input qty
 document.querySelectorAll('.product-qty').forEach(input => {
     input.addEventListener('input', updateTotal);
 });
 
-// Event listener untuk cash
 const cashInput = document.getElementById('cash');
 if (cashInput) {
     cashInput.addEventListener('input', function() {
