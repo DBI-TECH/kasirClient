@@ -1,7 +1,8 @@
 <?php
-include '../../config/database.php';
-include '../../includes/fungsi.php';
-include '../../includes/header.php';
+// Mulai session dan include database
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/fungsi.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
@@ -16,6 +17,7 @@ if (!$item) {
     exit;
 }
 
+// Proses form SEBELUM include header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = mysqli_real_escape_string($conn, $_POST['nama_menu']);
     $harga = (int)$_POST['harga'];
@@ -24,7 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: index.php');
     exit;
 }
+
+// Setelah semua proses selesai, baru include header
+include '../../includes/header.php';
 ?>
+
 <h2>Edit Menu</h2>
 <form method="POST">
     <div class="form-group">
@@ -37,4 +43,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <button type="submit">Simpan</button>
 </form>
+
 <?php include '../../includes/footer.php'; ?>

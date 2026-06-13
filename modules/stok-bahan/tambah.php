@@ -1,7 +1,10 @@
 <?php
-include '../../config/database.php';
-include '../../includes/header.php';
+// Mulai session dan include database
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/fungsi.php';
 
+// Proses form SEBELUM include header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = mysqli_real_escape_string($conn, $_POST['nama_stok']);
     $stok = (int)$_POST['stok'];
@@ -10,6 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: index.php");
     exit;
 }
+
+// Setelah semua proses selesai, baru include header
+include '../../includes/header.php';
 ?>
 
 <div class="page-header">
@@ -28,4 +34,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <button type="submit" class="submit-btn">Simpan</button>
 </form>
+
 <?php include '../../includes/footer.php'; ?>

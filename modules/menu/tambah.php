@@ -1,10 +1,12 @@
 <?php
-include '../../config/database.php';
-include '../../includes/fungsi.php';
-include '../../includes/header.php';
+// Mulai session dan include database
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/fungsi.php';
 
 $availableTypes = ['mocktail', 'milk base', 'coffe', 'snack', 'lainnya'];
 
+// Proses form SEBELUM include header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = mysqli_real_escape_string($conn, $_POST['nama_menu']);
     $harga = (int)$_POST['harga'];
@@ -20,11 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: index.php");
     exit;
 }
+
+// Setelah semua proses selesai, baru include header
+include '../../includes/header.php';
 ?>
+
 <div class="page-header">
     <h2>Tambah Menu</h2>
     <a href="index.php" class="back-btn">← Kembali ke Menu</a>
 </div>
+
 <form method="POST">
     <div class="form-group">
         <label>Nama Menu</label>
@@ -48,4 +55,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
     <button type="submit">Simpan</button>
 </form>
+
 <?php include '../../includes/footer.php'; ?>
