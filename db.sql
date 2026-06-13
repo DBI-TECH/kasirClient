@@ -21,6 +21,9 @@ SET time_zone = "+00:00";
 -- Database: `kasir_db`
 --
 
+CREATE DATABASE IF NOT EXISTS `kasir_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `kasir_db`;
+
 -- --------------------------------------------------------
 
 --
@@ -363,6 +366,7 @@ ALTER TABLE `transaksi`
 ALTER TABLE `detail_transaksi`
   ADD CONSTRAINT `detail_transaksi_ibfk_1` FOREIGN KEY (`id_transaksi`) REFERENCES `transaksi` (`id_transaksi`),
   ADD CONSTRAINT `detail_transaksi_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
