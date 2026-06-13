@@ -186,7 +186,7 @@ CREATE TABLE `kasir` (
 --
 
 INSERT INTO `kasir` (`id_kasir`, `nama_kasir`) VALUES
-(1, 'Anya'),
+(1, 'ucok'),
 (2, 'Budi'),
 (3, 'Andi');
 
