@@ -997,7 +997,7 @@ body {
     <div class="modal-content">
         <h3><i class="fas fa-qrcode"></i> QRIS Payment</h3>
         <div class="qr-container">
-            <img src="<?= BASE_URL ?>assets/img/qris.jpg" alt="QRIS Code" onerror="this.src='https://placehold.co/180x180?text=QRIS'">
+            <img src="<?= BASE_URL ?>assets/img/qris.jpeg" alt="QRIS Code" onerror="this.src='https://placehold.co/180x180?text=QRIS'">
             
             <div class="row-flex">
                 <span>Subtotal</span>
