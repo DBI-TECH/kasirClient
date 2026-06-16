@@ -1,29 +1,39 @@
 <?php
 session_start();
 include 'config/database.php';
+include 'includes/fungsi.php';
 
 $error = '';
 
 if (isset($_POST['login'])) {
-
     $username = trim($_POST['username']);
-
-    $query = mysqli_query(
-        $conn,
-        "SELECT * FROM kasir WHERE nama_kasir='$username'"
-    );
-
-    if (mysqli_num_rows($query) > 0) {
-
-        $data = mysqli_fetch_assoc($query);
-
-        $_SESSION['login'] = true;
-        $_SESSION['nama_kasir'] = $data['nama_kasir'];
-
-        header("Location: index.php");
-        exit;
+    $username = mysqli_real_escape_string($conn, $username); // PERBAIKAN: Escape SQL Injection
+    $role = $_POST['role'] ?? 'kasir';
+    
+    if ($role == 'admin') {
+        // Login sebagai Admin
+        if (isAdmin($conn, $username, $_POST['password'])) {
+            $_SESSION['login'] = true;
+            $_SESSION['role'] = 'admin';
+            header("Location: admin/dashboard.php");
+            exit;
+        } else {
+            $error = "Username atau password admin salah!";
+        }
     } else {
-        $error = "Kasir tidak ditemukan!";
+        // Login sebagai Kasir
+        $query = mysqli_query($conn, "SELECT * FROM kasir WHERE nama_kasir='$username'");
+        if (mysqli_num_rows($query) > 0) {
+            $data = mysqli_fetch_assoc($query);
+            $_SESSION['login'] = true;
+            $_SESSION['role'] = 'kasir';
+            $_SESSION['nama_kasir'] = $data['nama_kasir'];
+            $_SESSION['nama'] = $data['nama_kasir'];
+            header("Location: index.php");
+            exit;
+        } else {
+            $error = "Kasir tidak ditemukan!";
+        }
     }
 }
 ?>
@@ -59,7 +69,7 @@ body{
 }
 
 .login-container{
-    width:400px;
+    width:420px;
     background:#fff;
     padding:40px;
     border-radius:20px;
@@ -90,9 +100,6 @@ body{
     font-size:14px;
 }
 
-
-
-
 .title{
     text-align:center;
     margin-bottom:25px;
@@ -113,16 +120,19 @@ body{
     color:#444;
 }
 
-.form-group input{
+.form-group input,
+.form-group select{
     width:100%;
     padding:12px 15px;
     border:2px solid #eee;
     border-radius:10px;
     outline:none;
     transition:.3s;
+    font-size:14px;
 }
 
-.form-group input:focus{
+.form-group input:focus,
+.form-group select:focus{
     border-color:#e0b200;
 }
 
@@ -159,6 +169,13 @@ body{
     color:#777;
     font-size:13px;
 }
+
+.role-info{
+    font-size:12px;
+    color:#888;
+    margin-top:5px;
+    text-align:center;
+}
 </style>
 </head>
 <body>
@@ -171,7 +188,7 @@ body{
 </div>
 
     <div class="title">
-        <h2>Login Kasir</h2>
+        <h2>Login</h2>
     </div>
 
     <?php if($error != '') : ?>
@@ -183,8 +200,22 @@ body{
     <form method="POST">
 
         <div class="form-group">
-            <label>Nama Kasir</label>
-            <input type="text" name="username" placeholder="Masukkan nama kasir" required>
+            <label>Login Sebagai</label>
+            <select name="role" id="role" onchange="togglePasswordField()">
+                <option value="kasir">Kasir</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Masukkan username" required>
+        </div>
+
+        <div class="form-group" id="passwordGroup">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Masukkan password (khusus admin)" id="passwordInput">
+            <div class="role-info">* Password hanya diperlukan untuk login sebagai Admin</div>
         </div>
 
         <button type="submit" name="login" class="btn-login">
@@ -194,10 +225,32 @@ body{
     </form>
 
     <div class="footer">
-        © <?= date('Y') ?> Tuklife coffe
+        © <?= date('Y') ?> Tuklife Coffee
     </div>
 
 </div>
+
+<script>
+function togglePasswordField() {
+    const role = document.getElementById('role').value;
+    const passwordGroup = document.getElementById('passwordGroup');
+    const passwordInput = document.getElementById('passwordInput');
+    
+    if (role === 'admin') {
+        passwordGroup.style.display = 'block';
+        passwordInput.required = true;
+    } else {
+        passwordGroup.style.display = 'block';
+        passwordInput.required = false;
+        passwordInput.value = '';
+    }
+}
+
+// Inisialisasi
+document.addEventListener('DOMContentLoaded', function() {
+    togglePasswordField();
+});
+</script>
 
 </body>
 </html>

@@ -73,46 +73,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_transaksi'])) 
         }
         
         if (!$error) {
-            $change = $cash - $total;
+            // ======= CEK STOK SEBELUM TRANSAKSI =======
+            $stokError = false;
+            $stokCek = [];
             
-            mysqli_begin_transaction($conn);
-            try {
-                $nama_pemesan_esc = mysqli_real_escape_string($conn, $nama_pemesan);
-                $query = "INSERT INTO transaksi (
-                    total,
-                    nama_pemesan,
-                    cash,
-                    `change`
-                ) VALUES (
-                    $total,
-                    '$nama_pemesan_esc',
-                    $cash,
-                    $change
-                )";
+            foreach ($cartItems as $item) {
+                $id = $item['id_barang'];
+                $qty = $item['jumlah'];
                 
-                if (!mysqli_query($conn, $query)) {
-                    throw new Exception('Gagal menyimpan transaksi');
-                }
-                $id_transaksi = mysqli_insert_id($conn);
+                // Ambil stok saat ini
+                $stokQuery = "SELECT stok, nama_barang FROM barang WHERE id_barang = $id";
+                $stokResult = mysqli_query($conn, $stokQuery);
+                $stokData = mysqli_fetch_assoc($stokResult);
                 
-                foreach ($cartItems as $item) {
-                    $q = "INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah) VALUES ($id_transaksi, {$item['id_barang']}, {$item['jumlah']})";
-                    if (!mysqli_query($conn, $q)) {
-                        throw new Exception('Gagal menyimpan detail transaksi');
+                if ($stokData) {
+                    $stokTersedia = $stokData['stok'];
+                    $namaBarang = $stokData['nama_barang'];
+                    
+                    if ($stokTersedia < $qty) {
+                        $stokError = true;
+                        $stokCek[] = "$namaBarang (stok: $stokTersedia, diminta: $qty)";
                     }
                 }
+            }
+            
+            if ($stokError) {
+                $pesan = '✗ Stok tidak mencukupi untuk: ' . implode(', ', $stokCek);
+                $error = true;
+            }
+            // ======= END CEK STOK =======
+            
+            if (!$error) {
+                $change = $cash - $total;
                 
-                mysqli_commit($conn);
-                
-                $_POST = [];
-                
-                // Redirect ke struk.php
-                header("Location: struk.php?id=$id_transaksi");
-                exit;
-                
-            } catch (Exception $e) {
-                mysqli_rollback($conn);
-                $pesan = '✗ ' . $e->getMessage();
+                mysqli_begin_transaction($conn);
+                try {
+                    $nama_pemesan_esc = mysqli_real_escape_string($conn, $nama_pemesan);
+                    $query = "INSERT INTO transaksi (
+                        total,
+                        nama_pemesan,
+                        cash,
+                        `change`
+                    ) VALUES (
+                        $total,
+                        '$nama_pemesan_esc',
+                        $cash,
+                        $change
+                    )";
+                    
+                    if (!mysqli_query($conn, $query)) {
+                        throw new Exception('Gagal menyimpan transaksi');
+                    }
+                    $id_transaksi = mysqli_insert_id($conn);
+                    
+                    foreach ($cartItems as $item) {
+                        $q = "INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah) VALUES ($id_transaksi, {$item['id_barang']}, {$item['jumlah']})";
+                        if (!mysqli_query($conn, $q)) {
+                            throw new Exception('Gagal menyimpan detail transaksi');
+                        }
+                        // ======= END KURANGI STOK =======
+                    }
+                    
+                    mysqli_commit($conn);
+                    
+                    $_POST = [];
+                    
+                    header("Location: struk.php?id=$id_transaksi");
+                    exit;
+                    
+                } catch (Exception $e) {
+                    mysqli_rollback($conn);
+                    $pesan = '✗ ' . $e->getMessage();
+                }
             }
         }
     }
@@ -138,7 +170,8 @@ foreach ($itemsByTipe as $group) {
                 'harga' => $harga,
                 'qty' => $qty,
                 'subtotal' => $harga * $qty,
-                'tipe' => $item['tipe'] ?? 'Umum'
+                'tipe' => $item['tipe'] ?? 'Umum',
+                'stok' => $item['stok'] ?? 0
             ];
         }
     }
@@ -200,6 +233,30 @@ body {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.product-card .stok-info {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product-card .stok-info .stok-habis {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.product-card .stok-info .stok-menipis {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.product-card .stok-info .stok-aman {
+    color: #10b981;
+    font-weight: 600;
+}
+
 .product-qty {
     width: 100px;
     padding: 8px;
@@ -214,6 +271,11 @@ body {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+}
+
+.product-qty:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
 }
 
 .product-subtotal {
@@ -305,6 +367,11 @@ body {
 
 .btn-success:hover {
     background-color: #059669;
+}
+
+.btn-success:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-qr {
@@ -808,13 +875,35 @@ body {
                         <?php foreach ($group as $item): 
                             $id_barang = (int)$item['id_barang'];
                             $qtyVal = $_POST['qty'][$id_barang] ?? 0;
+                            $stok = $item['stok'] ?? 0;
+                            $isHabis = $stok <= 0;
+                            $isMenipis = $stok > 0 && $stok <= 5;
                         ?>
-                            <div class="product-card" data-price="<?= $item['harga'] ?>" data-id="<?= $id_barang ?>">
+                            <div class="product-card" 
+                                 data-price="<?= $item['harga'] ?>" 
+                                 data-id="<?= $id_barang ?>"
+                                 data-stok="<?= $stok ?>">
                                 <div class="product-name"><?= htmlspecialchars($item['nama_barang']) ?></div>
                                 <div class="product-price"><?= rupiah($item['harga']) ?></div>
+                                
+                                <!-- ======= TAMPILAN STOK ======= -->
+                                <div class="stok-info">
+                                    <i class="fas fa-box"></i>
+                                    Stok: 
+                                    <?php if ($isHabis): ?>
+                                        <span class="stok-habis"><i class="fas fa-times-circle"></i> Habis</span>
+                                    <?php elseif ($isMenipis): ?>
+                                        <span class="stok-menipis"><i class="fas fa-exclamation-triangle"></i> <?= $stok ?></span>
+                                    <?php else: ?>
+                                        <span class="stok-aman"><i class="fas fa-check-circle"></i> <?= $stok ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <!-- ======= END TAMPILAN STOK ======= -->
+                                
                                 <input type="number" name="qty[<?= $id_barang ?>]" 
                                        value="<?= $qtyVal ?>" min="0" class="product-qty"
-                                       data-id="<?= $id_barang ?>">
+                                       data-id="<?= $id_barang ?>"
+                                       <?= $isHabis ? 'disabled style="background:#f1f5f9;cursor:not-allowed;"' : '' ?>>
                                 <div class="product-subtotal" id="subtotal_<?= $id_barang ?>">
                                     <?= $qtyVal > 0 ? '= ' . rupiah($item['harga'] * $qtyVal) : '' ?>
                                 </div>
@@ -879,7 +968,7 @@ body {
         </div>
         
         <div class="button-group">
-            <button type="submit" name="submit_transaksi" value="1" class="btn btn-success">
+            <button type="submit" name="submit_transaksi" value="1" class="btn btn-success" id="btnSubmit">
                 <i class="fas fa-save"></i> Simpan Transaksi
             </button>
             <button type="button" class="btn btn-qr" onclick="showQRCode()">
@@ -894,6 +983,7 @@ body {
     <div class="modal-content">
         <h3>Edit Jumlah Pesanan</h3>
         <p id="editItemName"></p>
+        <p style="font-size:12px;color:#64748b;" id="editItemStok"></p>
         <input type="number" id="editQty" min="0" style="width: 100%; padding: 8px; margin: 10px 0;">
         <div class="modal-buttons">
             <button onclick="saveEdit()" class="btn-edit">Simpan</button>
@@ -940,7 +1030,7 @@ let currentEditId = null;
 function showQRCode() {
     let total = 0;
     let quantity = 0;
-    const qtyInputs = document.querySelectorAll('.product-qty');
+    const qtyInputs = document.querySelectorAll('.product-qty:not([disabled])');
     qtyInputs.forEach(input => {
         let qty = parseInt(input.value) || 0;
         if (qty > 0) {
@@ -980,37 +1070,60 @@ function updateTotal() {
     let total = 0;
     let itemCount = 0;
     let orderItems = [];
+    let hasError = false;
     
-    const qtyInputs = document.querySelectorAll('.product-qty');
+    const qtyInputs = document.querySelectorAll('.product-qty:not([disabled])');
     
     qtyInputs.forEach(input => {
         let qty = parseInt(input.value) || 0;
         if (qty > 0) {
-            itemCount++;
             const productCard = input.closest('.product-card');
             const price = parseInt(productCard.dataset.price);
-            const subtotal = price * qty;
-            total += subtotal;
+            const stokTersedia = parseInt(productCard.dataset.stok) || 0;
             
-            const id = productCard.dataset.id;
-            const subtotalDiv = document.getElementById(`subtotal_${id}`);
-            if (subtotalDiv) {
-                subtotalDiv.textContent = `= ${formatRupiah(subtotal)}`;
+            // ======= CEK STOK DI FRONTEND =======
+            if (qty > stokTersedia) {
+                hasError = true;
+                input.style.borderColor = '#ef4444';
+                input.style.backgroundColor = '#fee2e2';
+                const productName = productCard.querySelector('.product-name').textContent;
+                alert(`⚠️ Stok ${productName} tidak mencukupi!\nStok tersedia: ${stokTersedia}\nDiminta: ${qty}`);
+                input.value = stokTersedia;
+                qty = stokTersedia;
+            } else {
+                input.style.borderColor = '#cbd5e1';
+                input.style.backgroundColor = 'white';
             }
+            // ======= END CEK STOK =======
             
-            const nama = productCard.querySelector('.product-name').innerText;
-            orderItems.push({
-                id: parseInt(id),
-                nama: nama,
-                harga: price,
-                qty: qty,
-                subtotal: subtotal
-            });
+            if (qty > 0) {
+                itemCount++;
+                const subtotal = price * qty;
+                total += subtotal;
+                
+                const id = productCard.dataset.id;
+                const subtotalDiv = document.getElementById(`subtotal_${id}`);
+                if (subtotalDiv) {
+                    subtotalDiv.textContent = `= ${formatRupiah(subtotal)}`;
+                }
+                
+                const nama = productCard.querySelector('.product-name').innerText;
+                orderItems.push({
+                    id: parseInt(id),
+                    nama: nama,
+                    harga: price,
+                    qty: qty,
+                    subtotal: subtotal,
+                    stok: stokTersedia
+                });
+            }
         } else {
             const productCard = input.closest('.product-card');
             const id = productCard.dataset.id;
             const subtotalDiv = document.getElementById(`subtotal_${id}`);
             if (subtotalDiv) subtotalDiv.textContent = '';
+            input.style.borderColor = '#cbd5e1';
+            input.style.backgroundColor = 'white';
         }
     });
     
@@ -1022,6 +1135,14 @@ function updateTotal() {
     document.getElementById('itemCount').textContent = itemCount;
     updateOrderSummary(orderItems, total);
     updateKembalian();
+    
+    // Enable/disable submit button
+    const btnSubmit = document.getElementById('btnSubmit');
+    if (hasError || itemCount === 0) {
+        btnSubmit.disabled = true;
+    } else {
+        btnSubmit.disabled = false;
+    }
 }
 
 function updateOrderSummary(items, total) {
@@ -1063,15 +1184,25 @@ function editItem(id, currentQty) {
     currentEditId = id;
     const productCard = document.querySelector(`.product-card[data-id="${id}"]`);
     const productName = productCard.querySelector('.product-name').innerText;
+    const stokTersedia = parseInt(productCard.dataset.stok) || 0;
     
     document.getElementById('editItemName').innerText = productName;
+    document.getElementById('editItemStok').innerText = `Stok tersedia: ${stokTersedia}`;
     document.getElementById('editQty').value = currentQty;
+    document.getElementById('editQty').max = stokTersedia;
     document.getElementById('editModal').style.display = 'block';
 }
 
 function saveEdit() {
     const newQty = parseInt(document.getElementById('editQty').value) || 0;
     const qtyInput = document.querySelector(`.product-qty[data-id="${currentEditId}"]`);
+    const productCard = document.querySelector(`.product-card[data-id="${currentEditId}"]`);
+    const stokTersedia = parseInt(productCard.dataset.stok) || 0;
+    
+    if (newQty > stokTersedia) {
+        alert(`⚠️ Stok tidak mencukupi! Tersedia: ${stokTersedia}`);
+        return;
+    }
     
     if (qtyInput) {
         qtyInput.value = newQty;
@@ -1101,7 +1232,7 @@ function closeModal() {
 
 function updateKembalian() {
     let total = 0;
-    const qtyInputs = document.querySelectorAll('.product-qty');
+    const qtyInputs = document.querySelectorAll('.product-qty:not([disabled])');
     qtyInputs.forEach(input => {
         let qty = parseInt(input.value) || 0;
         if (qty > 0) {

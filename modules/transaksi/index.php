@@ -3,14 +3,23 @@ include '../../config/database.php';
 include '../../includes/fungsi.php';
 include '../../includes/header.php';
 
+// ==== HITUNG TOTAL TRANSAKSI ====
+$queryTotal = "SELECT COUNT(*) as total FROM transaksi";
+$resultTotal = mysqli_query($conn, $queryTotal);
+if ($resultTotal) {
+    $totalTransaksi = mysqli_fetch_assoc($resultTotal)['total'];
+} else {
+    $totalTransaksi = 0;
+}
+
+// Ambil semua transaksi
 $query = "SELECT * FROM transaksi ORDER BY id_transaksi DESC";
 $result = mysqli_query($conn, $query);
 
-$totalTransaksi = $result ? mysqli_num_rows($result) : 0;
+// Statistik hari ini
 $queryHariIni = "SELECT COUNT(*) as total, COALESCE(SUM(total), 0) as pendapatan 
                 FROM transaksi 
-                WHERE tgl_transaksi >= CONCAT(CURDATE(), ' 12:00:00')
-                AND tgl_transaksi < CONCAT(DATE_ADD(CURDATE(), INTERVAL 1 DAY), ' 12:00:00')";
+                WHERE DATE(tgl_transaksi) = CURDATE()";
 $resultHariIni = mysqli_query($conn, $queryHariIni);
 $dataHariIni = mysqli_fetch_assoc($resultHariIni);
 ?>
@@ -23,11 +32,11 @@ $dataHariIni = mysqli_fetch_assoc($resultHariIni);
         <div class="stat-label"><i class="fas fa-chart-line"></i> Total Transaksi</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value"><?= $dataHariIni['total'] ?></div>
+        <div class="stat-value"><?= $dataHariIni['total'] ?? 0 ?></div>
         <div class="stat-label"><i class="fas fa-calendar-day"></i> Transaksi Hari Ini</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value"><?= rupiah($dataHariIni['pendapatan']) ?></div>
+        <div class="stat-value"><?= rupiah($dataHariIni['pendapatan'] ?? 0) ?></div>
         <div class="stat-label"><i class="fas fa-money-bill-wave"></i> Pendapatan Hari Ini</div>
     </div>
 </div>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 11, 2026 at 12:34 PM
+-- Generation Time: Jun 16, 2026 at 11:16 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -21,8 +21,26 @@ SET time_zone = "+00:00";
 -- Database: `kasir_db`
 --
 
-CREATE DATABASE IF NOT EXISTS `kasir_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE `kasir_db`;
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin`
+--
+
+CREATE TABLE `admin` (
+  `id_admin` int NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `nama_admin` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`id_admin`, `username`, `password`, `nama_admin`, `created_at`) VALUES
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'Administrator', '2026-06-16 11:09:05');
 
 -- --------------------------------------------------------
 
@@ -34,6 +52,7 @@ CREATE TABLE `barang` (
   `id_barang` int NOT NULL,
   `nama_barang` varchar(100) DEFAULT NULL,
   `harga` int DEFAULT NULL,
+  `stok` int DEFAULT '0',
   `tipe` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -41,23 +60,23 @@ CREATE TABLE `barang` (
 -- Dumping data for table `barang`
 --
 
-INSERT INTO `barang` (`id_barang`, `nama_barang`, `harga`, `tipe`) VALUES
-(1, 'Cranora', 18000, 'mocktail'),
-(2, 'Solvia', 18000, 'mocktail'),
-(3, 'Brezza', 18000, 'mocktail'),
-(4, 'Matcha', 18000, 'milk base'),
-(5, 'Chocolate', 18000, 'milk base'),
-(6, 'Red Velvet', 18000, 'milk base'),
-(7, 'Milky Berry', 18000, 'milk base'),
-(8, 'Tubruk', 12000, 'coffe'),
-(9, 'Berryboo', 18000, 'coffe'),
-(10, 'Moora', 16000, 'coffe'),
-(11, 'Americano', 15000, 'coffe'),
-(12, 'Caffra', 16000, 'coffe'),
-(13, 'Cheese Roll', 15000, 'snack'),
-(14, 'BBQ French Fries', 15000, 'snack'),
-(15, 'Mix Platter', 18000, 'snack'),
-(16, 'late', 15, 'coffe');
+INSERT INTO `barang` (`id_barang`, `nama_barang`, `harga`, `stok`, `tipe`) VALUES
+(1, 'Cranora', 18000, 50, 'mocktail'),
+(2, 'Solvia', 18000, 50, 'mocktail'),
+(3, 'Brezza', 18000, 50, 'mocktail'),
+(4, 'Matcha', 18000, 48, 'milk base'),
+(5, 'Chocolate', 18000, 50, 'milk base'),
+(6, 'Red Velvet', 18000, 50, 'milk base'),
+(7, 'Milky Berry', 18000, 50, 'milk base'),
+(8, 'Tubruk', 12000, 50, 'coffe'),
+(9, 'Berryboo', 18000, 50, 'coffe'),
+(10, 'Moora', 16000, 50, 'coffe'),
+(11, 'Americano', 15000, 50, 'coffe'),
+(12, 'Caffra', 16000, 48, 'coffe'),
+(13, 'Cheese Roll', 15000, 50, 'snack'),
+(14, 'BBQ French Fries', 15000, 50, 'snack'),
+(15, 'Mix Platter', 18000, 50, 'snack'),
+(16, 'late', 15, 50, 'coffe');
 
 -- --------------------------------------------------------
 
@@ -168,7 +187,32 @@ INSERT INTO `detail_transaksi` (`id_detail`, `id_transaksi`, `id_barang`, `jumla
 (125, 51, 8, 1),
 (126, 52, 8, 8),
 (127, 53, 8, 3),
-(128, 53, 14, 2);
+(128, 53, 14, 2),
+(129, 54, 4, 1),
+(130, 55, 12, 1);
+
+--
+-- Triggers `detail_transaksi`
+--
+DELIMITER $$
+CREATE TRIGGER `cek_stok_sebelum_transaksi` BEFORE INSERT ON `detail_transaksi` FOR EACH ROW BEGIN
+    DECLARE stok_tersedia INT;
+    SELECT stok INTO stok_tersedia FROM barang WHERE id_barang = NEW.id_barang;
+    IF stok_tersedia < NEW.jumlah THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Stok tidak mencukupi!';
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `kurangi_stok_setelah_transaksi` AFTER INSERT ON `detail_transaksi` FOR EACH ROW BEGIN
+    UPDATE barang 
+    SET stok = stok - NEW.jumlah 
+    WHERE id_barang = NEW.id_barang;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -284,11 +328,20 @@ INSERT INTO `transaksi` (`id_transaksi`, `tgl_transaksi`, `total`, `nama_pemesan
 (50, '2026-06-11 11:51:30', 18000, 'gg', 20000, 2000),
 (51, '2026-06-11 12:10:40', 12000, 'ii', 20000, 8000),
 (52, '2026-06-11 12:30:05', 96000, 'hhh', 100000, 4000),
-(53, '2026-06-11 12:30:25', 66000, 'Asw', 100000, 34000);
+(53, '2026-06-11 12:30:25', 66000, 'Asw', 100000, 34000),
+(54, '2026-06-16 11:13:11', 18000, 'audi', 40000, 22000),
+(55, '2026-06-16 11:14:03', 16000, 'xsc', 20000, 4000);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin`
+--
+ALTER TABLE `admin`
+  ADD PRIMARY KEY (`id_admin`),
+  ADD UNIQUE KEY `username` (`username`);
 
 --
 -- Indexes for table `barang`
@@ -327,6 +380,12 @@ ALTER TABLE `transaksi`
 --
 
 --
+-- AUTO_INCREMENT for table `admin`
+--
+ALTER TABLE `admin`
+  MODIFY `id_admin` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `barang`
 --
 ALTER TABLE `barang`
@@ -336,7 +395,7 @@ ALTER TABLE `barang`
 -- AUTO_INCREMENT for table `detail_transaksi`
 --
 ALTER TABLE `detail_transaksi`
-  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT for table `kasir`
@@ -354,7 +413,7 @@ ALTER TABLE `stok`
 -- AUTO_INCREMENT for table `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+  MODIFY `id_transaksi` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Constraints for dumped tables
@@ -366,7 +425,6 @@ ALTER TABLE `transaksi`
 ALTER TABLE `detail_transaksi`
   ADD CONSTRAINT `detail_transaksi_ibfk_1` FOREIGN KEY (`id_transaksi`) REFERENCES `transaksi` (`id_transaksi`),
   ADD CONSTRAINT `detail_transaksi_ibfk_2` FOREIGN KEY (`id_barang`) REFERENCES `barang` (`id_barang`);
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

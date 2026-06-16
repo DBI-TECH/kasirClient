@@ -700,6 +700,11 @@ hr {
     box-shadow: none;
   }
 }
+/* Tambahkan di bagian CSS */
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-secondary { background: #f1f5f9; color: #475569; }
 
 
     </style>

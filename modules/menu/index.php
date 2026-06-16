@@ -54,6 +54,7 @@ foreach ($allMenu as $barang) {
                 <th>Kategori</th>
                 <th>Nama Menu</th>
                 <th>Harga</th>
+                <th>Stok</th>
                 <th width="120">Aksi</th>
             </tr>
         </thead>
@@ -68,6 +69,7 @@ foreach ($allMenu as $barang) {
                 <td><?= ucfirst($kategori) ?></td>
                 <td><?= htmlspecialchars($barang['nama_barang']) ?></td>
                 <td><?= rupiah($barang['harga']) ?></td>
+                <td><?= $barang['stok'] ?? 0 ?></td>
                 <td>
                     <a href="edit.php?id=<?= $barang['id_barang'] ?>" class="action-link">
                         <i class="fas fa-edit"></i> Edit
