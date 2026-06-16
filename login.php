@@ -7,11 +7,10 @@ $error = '';
 
 if (isset($_POST['login'])) {
     $username = trim($_POST['username']);
-    $username = mysqli_real_escape_string($conn, $username); // PERBAIKAN: Escape SQL Injection
+    $username = mysqli_real_escape_string($conn, $username);
     $role = $_POST['role'] ?? 'kasir';
     
     if ($role == 'admin') {
-        // Login sebagai Admin
         if (isAdmin($conn, $username, $_POST['password'])) {
             $_SESSION['login'] = true;
             $_SESSION['role'] = 'admin';
@@ -27,7 +26,8 @@ if (isset($_POST['login'])) {
             $data = mysqli_fetch_assoc($query);
             $_SESSION['login'] = true;
             $_SESSION['role'] = 'kasir';
-            $_SESSION['nama_kasir'] = $data['nama_kasir'];
+            $_SESSION['id_kasir'] = $data['id_kasir'];      // ✅ TAMBAHKAN
+            $_SESSION['nama_kasir'] = $data['nama_kasir'];  // ✅ TAMBAHKAN
             $_SESSION['nama'] = $data['nama_kasir'];
             header("Location: index.php");
             exit;

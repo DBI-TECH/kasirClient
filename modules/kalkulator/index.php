@@ -104,25 +104,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_transaksi'])) 
             // ======= END CEK STOK =======
             
             if (!$error) {
+                // ✅ AMBIL ID KASIR DARI SESSION
+                $id_kasir = $_SESSION['id_kasir'] ?? 0;
                 $change = $cash - $total;
                 
                 mysqli_begin_transaction($conn);
                 try {
                     $nama_pemesan_esc = mysqli_real_escape_string($conn, $nama_pemesan);
+                    
+                    // ✅ QUERY INSERT DENGAN id_kasir
                     $query = "INSERT INTO transaksi (
                         total,
                         nama_pemesan,
+                        id_kasir,
                         cash,
                         `change`
                     ) VALUES (
                         $total,
                         '$nama_pemesan_esc',
+                        $id_kasir,
                         $cash,
                         $change
                     )";
                     
                     if (!mysqli_query($conn, $query)) {
-                        throw new Exception('Gagal menyimpan transaksi');
+                        throw new Exception('Gagal menyimpan transaksi: ' . mysqli_error($conn));
                     }
                     $id_transaksi = mysqli_insert_id($conn);
                     
@@ -131,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_transaksi'])) 
                         if (!mysqli_query($conn, $q)) {
                             throw new Exception('Gagal menyimpan detail transaksi');
                         }
-                        // ======= END KURANGI STOK =======
                     }
                     
                     mysqli_commit($conn);

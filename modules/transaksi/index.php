@@ -12,8 +12,11 @@ if ($resultTotal) {
     $totalTransaksi = 0;
 }
 
-// Ambil semua transaksi
-$query = "SELECT * FROM transaksi ORDER BY id_transaksi DESC";
+// ✅ Ambil semua transaksi dengan JOIN ke tabel kasir
+$query = "SELECT t.*, k.nama_kasir 
+          FROM transaksi t
+          LEFT JOIN kasir k ON k.id_kasir = t.id_kasir
+          ORDER BY t.id_transaksi DESC";
 $result = mysqli_query($conn, $query);
 
 // Statistik hari ini
@@ -48,6 +51,7 @@ $dataHariIni = mysqli_fetch_assoc($resultHariIni);
                 <th width="50">No</th>
                 <th>Tanggal</th>
                 <th>Nama Pemesan</th>
+                <th>Kasir</th>        <!-- ✅ TAMBAHKAN -->
                 <th>Total</th>
                 <th width="100">Detail</th>
                 <th width="80">Aksi</th>
@@ -62,6 +66,7 @@ $dataHariIni = mysqli_fetch_assoc($resultHariIni);
                     <td><?= $no++ ?></td>
                     <td><?= date('d/m/Y H:i', strtotime($row['tgl_transaksi'])) ?></td>
                     <td><?= htmlspecialchars($row['nama_pemesan'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($row['nama_kasir'] ?? '-') ?></td> <!-- ✅ TAMBAHKAN -->
                     <td><strong><?= rupiah($row['total']) ?></strong></td>
                     <td>
                         <a href="detail.php?id=<?= $row['id_transaksi'] ?>" class="action-link">
@@ -77,7 +82,7 @@ $dataHariIni = mysqli_fetch_assoc($resultHariIni);
                 <?php endwhile; 
             else: ?>
                 <tr>
-                    <td colspan="6" style="text-align: center;">Belum ada transaksi</td>
+                    <td colspan="7" style="text-align: center;">Belum ada transaksi</td>
                 </tr>
             <?php endif; ?>
         </tbody>

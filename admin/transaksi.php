@@ -8,7 +8,11 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
 require_once '../config/database.php';
 require_once '../includes/fungsi.php';
 
-$query = "SELECT * FROM transaksi ORDER BY id_transaksi DESC";
+// ✅ Ambil semua transaksi dengan JOIN ke tabel kasir
+$query = "SELECT t.*, k.nama_kasir 
+          FROM transaksi t
+          LEFT JOIN kasir k ON k.id_kasir = t.id_kasir
+          ORDER BY t.id_transaksi DESC";
 $result = mysqli_query($conn, $query);
 
 $totalTransaksi = mysqli_num_rows($result);
@@ -193,6 +197,7 @@ $totalTransaksi = mysqli_num_rows($result);
                             <th>No</th>
                             <th>Tanggal</th>
                             <th>Pemesan</th>
+                            <th>Kasir</th>        <!-- ✅ TAMBAHKAN -->
                             <th class="text-right">Total</th>
                             <th class="text-right">Cash</th>
                             <th class="text-right">Kembalian</th>
@@ -209,6 +214,7 @@ $totalTransaksi = mysqli_num_rows($result);
                             <td><?= $no++ ?></td>
                             <td><?= date('d/m/Y H:i', strtotime($row['tgl_transaksi'])) ?></td>
                             <td><?= htmlspecialchars($row['nama_pemesan'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($row['nama_kasir'] ?? '-') ?></td> <!-- ✅ TAMBAHKAN -->
                             <td class="text-right"><strong><?= rupiah($row['total']) ?></strong></td>
                             <td class="text-right"><?= rupiah($row['cash']) ?></td>
                             <td class="text-right"><?= rupiah($row['change']) ?></td>
@@ -226,7 +232,7 @@ $totalTransaksi = mysqli_num_rows($result);
                         else:
                         ?>
                         <tr>
-                            <td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;">
+                            <td colspan="8" style="text-align:center;padding:30px;color:#94a3b8;">
                                 <i class="fas fa-info-circle"></i> Belum ada transaksi
                             </td>
                         </tr>

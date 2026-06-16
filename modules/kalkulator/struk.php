@@ -16,8 +16,11 @@ if ($id_transaksi <= 0) {
     exit;
 }
 
-// Ambil data transaksi
-$qTrans = mysqli_query($conn, "SELECT * FROM transaksi WHERE id_transaksi = $id_transaksi");
+// ✅ Ambil data transaksi dengan JOIN ke tabel kasir
+$qTrans = mysqli_query($conn, "SELECT t.*, k.nama_kasir 
+                               FROM transaksi t
+                               LEFT JOIN kasir k ON k.id_kasir = t.id_kasir
+                               WHERE t.id_transaksi = $id_transaksi");
 $transaksi = mysqli_fetch_assoc($qTrans);
 
 // Jika transaksi tidak ditemukan, redirect
@@ -26,8 +29,8 @@ if (!$transaksi) {
     exit;
 }
 
-// Ambil nama kasir dari session
-$nama_kasir = $_SESSION['nama_kasir'] ?? 'Kasir tidak diketahui';
+// ✅ Ambil nama kasir dari hasil JOIN (bukan dari session)
+$nama_kasir = $transaksi['nama_kasir'] ?? 'Kasir tidak diketahui';
 
 // Ambil detail transaksi
 $qDetail = mysqli_query($conn, 
@@ -160,7 +163,7 @@ require_once '../../includes/header.php';
 
         <p>No : TRX-<?= str_pad($transaksi['id_transaksi'], 5, '0', STR_PAD_LEFT) ?></p>
         <p><?= date('d/m/Y H:i:s', strtotime($transaksi['tgl_transaksi'])) ?></p>
-        <p>Kasir : <?= htmlspecialchars($nama_kasir) ?></p>
+        <p>Kasir : <?= htmlspecialchars($nama_kasir) ?></p> <!-- ✅ DARI DATABASE -->
         <p>Pemesan : <?= htmlspecialchars($transaksi['nama_pemesan'] ?? '-') ?></p>
 
         <p>--------------------------------</p>
