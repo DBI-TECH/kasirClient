@@ -4,7 +4,7 @@ require_once '../../includes/fungsi.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) {
-    header('Location: index.php');
+    header('Location: menu.php');
     exit;
 }
 
@@ -22,6 +22,6 @@ if ($data['total'] > 0) {
     $_SESSION['success'] = "Menu berhasil dihapus";
 }
 
-header('Location: index.php');
+header('Location: menu.php');
 exit;
 ?>

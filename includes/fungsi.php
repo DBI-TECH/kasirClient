@@ -161,4 +161,93 @@ function getGrafikPenjualan($conn, $hari = 7) {
               ORDER BY tanggal ASC";
     return mysqli_query($conn, $query);
 }
+// ========== FUNGSI SOFT DELETE ==========
+
+/**
+ * Ambil semua barang yang aktif (is_active = 1)
+ */
+function ambilSemuaBarangAktif($conn): array {
+    $result = mysqli_query($conn, "SELECT * FROM barang WHERE is_active = 1 OR is_active IS NULL");
+    if (!$result) {
+        return [];
+    }
+    $barang = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $barang[] = $row;
+    }
+    return $barang;
+}
+
+/**
+ * Ambil barang grouped by tipe yang aktif
+ */
+function ambilBarangGroupedByTipeAktif($conn, $filterTypes = null): array {
+    $groups = [];
+    if (barang_has_tipe_column($conn)) {
+        $result = mysqli_query($conn, "SELECT id_barang, nama_barang, harga, tipe, stok, is_active 
+                                       FROM barang 
+                                       WHERE is_active = 1 OR is_active IS NULL
+                                       ORDER BY tipe, id_barang");
+    } else {
+        $result = mysqli_query($conn, "SELECT id_barang, nama_barang, harga, stok, '' AS tipe, is_active 
+                                       FROM barang 
+                                       WHERE is_active = 1 OR is_active IS NULL
+                                       ORDER BY id_barang");
+    }
+
+    if (!$result) {
+        return $groups;
+    }
+
+    $validTypes = $filterTypes !== null ? $filterTypes : ['mocktail', 'milk base', 'coffe', 'snack'];
+    
+    while ($row = mysqli_fetch_assoc($result)) {
+        $tipe = trim($row['tipe']) !== '' ? trim($row['tipe']) : '';
+        
+        if ($tipe === '' || !in_array($tipe, $validTypes, true)) {
+            continue;
+        }
+        
+        $groups[$tipe][] = $row;
+    }
+    return $groups;
+}
+
+/**
+ * Ambil semua barang termasuk yang tidak aktif (untuk admin)
+ */
+function ambilSemuaBarangWithInactive($conn): array {
+    $result = mysqli_query($conn, "SELECT * FROM barang ORDER BY is_active DESC, id_barang");
+    if (!$result) {
+        return [];
+    }
+    $barang = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $barang[] = $row;
+    }
+    return $barang;
+}
+
+/**
+ * Restore menu yang sudah di-soft delete
+ */
+function restoreMenu($conn, $id_barang) {
+    $id_barang = (int)$id_barang;
+    $query = "UPDATE barang SET is_active = 1 WHERE id_barang = $id_barang";
+    return mysqli_query($conn, $query);
+}
+
+/**
+ * Cek apakah menu aktif
+ */
+function isMenuActive($conn, $id_barang): bool {
+    $id_barang = (int)$id_barang;
+    $query = "SELECT is_active FROM barang WHERE id_barang = $id_barang";
+    $result = mysqli_query($conn, $query);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $data = mysqli_fetch_assoc($result);
+        return $data['is_active'] == 1;
+    }
+    return false;
+}
 ?>

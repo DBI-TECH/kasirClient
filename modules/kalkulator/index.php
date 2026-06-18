@@ -8,7 +8,7 @@ require_once '../../config/database.php';
 require_once '../../includes/fungsi.php';
 
 // Ambil data barang
-$itemsByTipe = ambilBarangGroupedByTipe($conn);
+$itemsByTipe = ambilBarangGroupedByTipeAktif($conn);
 $itemMap = [];
 foreach ($itemsByTipe as $group) {
     foreach ($group as $b) {

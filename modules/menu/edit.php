@@ -1,5 +1,4 @@
 <?php
-// Mulai session dan include database
 session_start();
 require_once '../../config/database.php';
 require_once '../../includes/fungsi.php';
@@ -17,21 +16,32 @@ if (!$item) {
     exit;
 }
 
-// Proses form SEBELUM include header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = mysqli_real_escape_string($conn, $_POST['nama_menu']);
     $harga = (int)$_POST['harga'];
-    $query = "UPDATE barang SET nama_barang='$nama', harga=$harga WHERE id_barang=$id";
-    mysqli_query($conn, $query);
+    $stok = (int)$_POST['stok'];
+    
+    $query = "UPDATE barang SET 
+              nama_barang='$nama', 
+              harga=$harga, 
+              stok=$stok 
+              WHERE id_barang=$id";
+    
+    if (mysqli_query($conn, $query)) {
+        $_SESSION['success'] = "✅ Menu berhasil diupdate!";
+    } else {
+        $_SESSION['error'] = "❌ Gagal mengupdate menu: " . mysqli_error($conn);
+    }
     header('Location: index.php');
     exit;
 }
 
-// Setelah semua proses selesai, baru include header
 include '../../includes/header.php';
 ?>
 
 <h2>Edit Menu</h2>
+<a href="index.php" class="back-btn" style="display:inline-block;margin-bottom:16px;">← Kembali</a>
+
 <form method="POST">
     <div class="form-group">
         <label>Nama Menu</label>
@@ -41,7 +51,11 @@ include '../../includes/header.php';
         <label>Harga</label>
         <input type="number" name="harga" value="<?= htmlspecialchars($item['harga'] ?? 0) ?>" required>
     </div>
-    <button type="submit">Simpan</button>
+    <div class="form-group">
+        <label>Stok</label>
+        <input type="number" name="stok" value="<?= htmlspecialchars($item['stok'] ?? 0) ?>" min="0" required>
+    </div>
+    <button type="submit">Simpan Perubahan</button>
 </form>
 
 <?php include '../../includes/footer.php'; ?>

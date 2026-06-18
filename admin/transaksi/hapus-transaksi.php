@@ -3,7 +3,7 @@ require_once '../../config/database.php';
 
 $id_transaksi = (int)($_GET['id'] ?? 0);
 if ($id_transaksi <= 0) {
-    header('Location: index.php');
+    header('Location: transaksi.php');
     exit;
 }
 
@@ -16,5 +16,5 @@ try {
     mysqli_rollback($conn);
 }
 
-header('Location: index.php');
+header('Location: transaksi.php');
 exit;
