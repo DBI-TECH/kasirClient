@@ -1,4 +1,12 @@
 <?php
+// Pastikan $conn tersedia secara global
+global $conn;
+
+// Jika belum terdefinisi, include database.php
+if (!isset($conn) || $conn === null) {
+    require_once __DIR__ . '/../config/database.php';
+}
+
 function rupiah($angka) {
     if ($angka === null || $angka === '' || !is_numeric($angka)) {
         $angka = 0;
@@ -85,14 +93,12 @@ function getAdminByUsername($conn, $username) {
 function isAdmin($conn, $username, $password) {
     $admin = getAdminByUsername($conn, $username);
     if ($admin) {
-        // Gunakan password_verify jika password di-hash dengan password_hash
-        // Atau tetap gunakan md5 jika database menggunakan md5
         return $admin['password'] === md5($password);
     }
     return false;
 }
 
-// ========== FUNGSI LAPORAN ==========
+// ========== FUNGSI LAPORAN & GRAFIK ==========
 function getPendapatanHariIni($conn) {
     $query = "SELECT COALESCE(SUM(total), 0) as total FROM transaksi 
               WHERE DATE(tgl_transaksi) = CURDATE()";
@@ -137,7 +143,6 @@ function getTotalTransaksiHariIni($conn) {
     return $data['total'] ?? 0;
 }
 
-// ===== PERBAIKAN: getProdukTerlaris dengan GROUP BY lengkap =====
 function getProdukTerlaris($conn, $limit = 5) {
     $query = "SELECT b.id_barang, b.nama_barang, b.harga, 
               SUM(dt.jumlah) as total_terjual, 
@@ -161,11 +166,8 @@ function getGrafikPenjualan($conn, $hari = 7) {
               ORDER BY tanggal ASC";
     return mysqli_query($conn, $query);
 }
-// ========== FUNGSI SOFT DELETE ==========
 
-/**
- * Ambil semua barang yang aktif (is_active = 1)
- */
+// ========== FUNGSI SOFT DELETE ==========
 function ambilSemuaBarangAktif($conn): array {
     $result = mysqli_query($conn, "SELECT * FROM barang WHERE is_active = 1 OR is_active IS NULL");
     if (!$result) {
@@ -178,9 +180,6 @@ function ambilSemuaBarangAktif($conn): array {
     return $barang;
 }
 
-/**
- * Ambil barang grouped by tipe yang aktif
- */
 function ambilBarangGroupedByTipeAktif($conn, $filterTypes = null): array {
     $groups = [];
     if (barang_has_tipe_column($conn)) {
@@ -213,9 +212,6 @@ function ambilBarangGroupedByTipeAktif($conn, $filterTypes = null): array {
     return $groups;
 }
 
-/**
- * Ambil semua barang termasuk yang tidak aktif (untuk admin)
- */
 function ambilSemuaBarangWithInactive($conn): array {
     $result = mysqli_query($conn, "SELECT * FROM barang ORDER BY is_active DESC, id_barang");
     if (!$result) {
@@ -228,18 +224,12 @@ function ambilSemuaBarangWithInactive($conn): array {
     return $barang;
 }
 
-/**
- * Restore menu yang sudah di-soft delete
- */
 function restoreMenu($conn, $id_barang) {
     $id_barang = (int)$id_barang;
     $query = "UPDATE barang SET is_active = 1 WHERE id_barang = $id_barang";
     return mysqli_query($conn, $query);
 }
 
-/**
- * Cek apakah menu aktif
- */
 function isMenuActive($conn, $id_barang): bool {
     $id_barang = (int)$id_barang;
     $query = "SELECT is_active FROM barang WHERE id_barang = $id_barang";
@@ -250,4 +240,7 @@ function isMenuActive($conn, $id_barang): bool {
     }
     return false;
 }
+
+// Pastikan $conn tersedia secara global
+// Tidak perlu mendefinisikan ulang $conn di sini
 ?>

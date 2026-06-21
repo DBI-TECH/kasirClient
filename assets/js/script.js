@@ -47,3 +47,4 @@ function printReceipt(elementId) {
     document.body.innerHTML = originalContent;
     location.reload();
 }
+
